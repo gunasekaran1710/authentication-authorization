@@ -4,21 +4,26 @@ const savetoken=require('../token');
 const jwt=require('jsonwebtoken');
 const { viewPost } = require('../controller/userController');
 async function signin1(data){
-    const newuser2=new newuser(data);
-    const newuser1=await newuser2.save();
-    console.log(newuser1);
-    const token=jwt.sign({id:newuser2.id},'secreat12345');
-    console.log('hello');
-    console.log('Token saved to database');
-
-    const updatedata={token1:token};
-    console.log(updatedata);
-    await newuser.updateOne(
-      {_id:newuser1._id },
-      { $set: { token1:token} }
-    );
-    console.log('token updated');
-    return token;
+  //find the gmail id already exist
+    const email=await newuser.find({"email":data.email},{email:1,_id:0});
+    console.log(email);
+    //if email already exist
+    if(email>0){
+      const information="your already signin with this email ";
+      return information;
+    }
+    else{
+       const newuser2=new newuser(data);
+       const newuser1=await newuser2.save();
+       const token=jwt.sign({id:newuser2.id},'secreat12345');
+       const updatedata={token1:token};
+       console.log(updatedata);
+       await newuser.updateOne(
+       {_id:newuser1._id },
+       { $set: { token1:token} }
+        );
+       return token;
+      }
 }
 async function login1(data){
   console.log(data)
