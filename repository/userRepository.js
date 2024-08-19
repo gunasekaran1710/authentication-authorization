@@ -1,6 +1,7 @@
 const newuser=require('../models/user');
 const Post=require('../models/post');
 const jwt=require('jsonwebtoken');
+const secretkey="secret@12345";
 async function signin1(data){
   //find the gmail id already exist
     const email=await newuser.find({"email":data.email},{email:1,_id:0});
@@ -13,22 +14,17 @@ async function signin1(data){
     else{
         const newuser2=new newuser(data);
         const newuser1=await newuser2.save();
-        const token=jwt.sign({id:newuser2.id},'secreat12345');
-        const updatedata={token1:token};
-        console.log(updatedata);
-        await newuser.updateOne(
-        {_id:newuser1._id },
-        { $set: { token1:token} }
-         );
-        return token;
+        const token=jwt.sign({id:newuser2.id,role:newuser2.role},secretkey);
+        const information="signin successfully";
+        return [information,token];
       }
 }
 async function login1(data){
-  console.log(data)
-  const details2=await newuser.find({token1:data.token1});
+  const decoded = jwt.verify(data.token,secretkey);
+  const details2=await newuser.find({_id:decoded.id});
   if(details2.length>0){
-    console.log('login successfully');
-    return details2;
+    const information="login successfully";
+    return [information,details2];
 
   }
   else{
@@ -38,15 +34,14 @@ async function login1(data){
 }
 async function createPost(data){
   //find the role of the given token
-  const rolesArray=await newuser.find({"token1":data.token1},{role:1,_id:0});
-
-   const isManager = rolesArray.some(item => item.role === 'manager');
-
-  if (isManager) {
+  const decoded = jwt.verify(data.token,secretkey);
+  const userRole=decoded.role;
+  const manager="manager";
+  if (userRole===manager) {
       const post=new Post(data);
-      console.log(post);
       const createdpost=await post.save();
-      return createdpost;
+      const notification="your  post is created successfully";
+      return [notification,createdpost];
   } else {
       const notification="only manager can create the post";
       return notification;
@@ -55,23 +50,20 @@ async function createPost(data){
 }
 async function viewpost(data){
   //check the user already logined
-  const user=await newuser.find({"token1":data.token1});
+  const decoded = jwt.verify(data.token,secretkey);
+  const details=await newuser.find({_id:decoded.id});
   //if user is exist
-  if(user.length>0){
+  if(details.length>0){
     const post=await Post.find();
     return post;
   }
-  else{
-    const post="please give valide token";
-    return post;
-  }
-
 }
 async function deletepost(data){
   //find the role of the given token
-  const rolesArray=await newuser.find({"token1":data.token1},{role:1,_id:0});
-  const isManager = rolesArray.some(item => item.role === 'manager');
-  if (isManager){
+  const decoded = jwt.verify(data.token,secretkey);
+  const userRole=decoded.role;
+  const manager="manager";
+  if (userRole===manager) {
     try {
       const result = await Post.findByIdAndDelete(data.postid);
       if (result) {
@@ -93,31 +85,5 @@ async function deletepost(data){
   }
 
 }
-async function updatePostById(data){
-  //find the role of the given token
-  const rolesArray=await newuser.find({"token1":data.token1},{role:1,_id:0});
-  const isManager = rolesArray.some(item => item.role === 'manager');
-  if (isManager){
-    //find the post by id
-    const post=await Post.find({"_id":data.postid});
-    if(post.length>0){
-      const result = await Post.updateOne(
-        { _id: data.postid },         // Filter: Find the document by _id
-        { $set: { post: data.post, createdDate:Date.now() } } // Update: Set the new fields
-      );
-      
-      return result;
-    }
-    else{
-      const information="postid is wrong please check the postid";
-      return information;
-    }
-  }
-  else{
-    const information="manager can only update the post"
-    return information;
-  }
 
-}
-
-module.exports={signin1,login1,createPost,viewpost,deletepost,updatePostById};
+module.exports={signin1,login1,createPost,viewpost,deletepost};

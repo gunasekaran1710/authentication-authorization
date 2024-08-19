@@ -37,7 +37,7 @@ async function viewPost(req,res){
 
     }
     catch(err){
-        res.status(400).json('error');
+        res.status(400).json('please give the correct signin user token');
     }
 }
 async function deletePost(req,res){
@@ -52,13 +52,5 @@ async function deletePost(req,res){
 
 
 }
-async function updatePost(req,res){
-    try{
-        const post=await repository.updatePostById(req.body);
-        res.status(201).json(post);
-    }
-    catch(err){
-        res.status(400).json('error');
-    }
-}
-module.exports={signin,login,createPost,viewPost,deletePost,updatePost};
+
+module.exports={signin,login,createPost,viewPost,deletePost};

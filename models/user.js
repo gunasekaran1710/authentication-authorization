@@ -3,7 +3,6 @@ const newuserSchema=new mongoose.Schema({
     name:String,
     email:String,
     createpassword:String,
-    token1:String,
     role:String
 });
 
