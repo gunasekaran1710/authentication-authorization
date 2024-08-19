@@ -6,4 +6,5 @@ router.get('/login',controller.login);
 router.post('/create',controller.createPost);
 router.get('/viewpost',controller.viewPost);
 router.delete('/deletePost',controller.deletePost);
+router.put('/update',controller.updatePost);
 module.exports=router;

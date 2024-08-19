@@ -36,8 +36,9 @@ async function createPost(data){
   //find the role of the given token
   const decoded = jwt.verify(data.token,secretkey);
   const userRole=decoded.role;
+  const user=await newuser.find({_id:decoded.id});
   const manager="manager";
-  if (userRole===manager) {
+  if (userRole===manager&&user.length>0) {
       const post=new Post(data);
       const createdpost=await post.save();
       const notification="your  post is created successfully";
@@ -49,22 +50,27 @@ async function createPost(data){
 
 }
 async function viewpost(data){
-  //check the user already logined
-  const decoded = jwt.verify(data.token,secretkey);
-  const details=await newuser.find({_id:decoded.id});
+    //check the user already logined
+    const decoded = jwt.verify(data.token,secretkey);
+    const details=await newuser.find({_id:decoded.id});
   //if user is exist
-  if(details.length>0){
-    const post=await Post.find();
-    return post;
-  }
+    if(details.length>0){
+      const post=await Post.find();
+      return post;
+    }
+    else{
+      const information="please give the valid token";
+      return information;
+    }
+
 }
 async function deletepost(data){
   //find the role of the given token
   const decoded = jwt.verify(data.token,secretkey);
   const userRole=decoded.role;
+  const user=await newuser.find({_id:decoded.id});
   const manager="manager";
-  if (userRole===manager) {
-    try {
+  if (userRole===manager&&user.length>0) {
       const result = await Post.findByIdAndDelete(data.postid);
       if (result) {
           const notification='Document deleted successfully';
@@ -73,10 +79,6 @@ async function deletepost(data){
           const notification='No document found with the given ID.';
           return notification;
       }
-  } catch (err) {
-      const notification='Error deleting document:';
-      return notification;
-  }
 
   }
   else{
@@ -85,5 +87,26 @@ async function deletepost(data){
   }
 
 }
+async function updatepost(data){
+  const decoded = jwt.verify(data.token,secretkey);
+  const userRole=decoded.role;
+  const user=await newuser.find({_id:decoded.id});
+  const manager="manager";
+  if (userRole===manager&&user.length>0){
+    //find the post id is exist
+    const postDetails=await Post.findById(data.postid);
+    if (postDetails){
+      const update= await Post.updateOne({_id:data.postid},{ $set:{"post":data.post}});
+      const updatedPost=await Post.findById(data.postid);
+      const information="your post is updated successfiully";
+      return[information,updatedPost];
+    }
+  }
+  else{
+    const information="manager can only update this file";
+    return information;
+  }
 
-module.exports={signin1,login1,createPost,viewpost,deletepost};
+}
+
+module.exports={signin1,login1,createPost,viewpost,deletepost,updatepost};

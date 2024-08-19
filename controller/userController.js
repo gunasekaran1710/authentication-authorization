@@ -52,5 +52,16 @@ async function deletePost(req,res){
 
 
 }
+async function updatePost(req,res){
+    try{
+        const Post=await repository.updatepost(req.body);
+        res.status(201).json(Post);
 
-module.exports={signin,login,createPost,viewPost,deletePost};
+    }
+    catch(err){
+        res.status(400).json('error');
+    }
+
+}
+
+module.exports={signin,login,createPost,viewPost,deletePost,updatePost};
