@@ -93,7 +93,31 @@ async function deletepost(data){
   }
 
 }
+async function updatePostById(data){
+  //find the role of the given token
+  const rolesArray=await newuser.find({"token1":data.token1},{role:1,_id:0});
+  const isManager = rolesArray.some(item => item.role === 'manager');
+  if (isManager){
+    //find the post by id
+    const post=await Post.find({"_id":data.postid});
+    if(post.length>0){
+      const result = await Post.updateOne(
+        { _id: data.postid },         // Filter: Find the document by _id
+        { $set: { post: data.post, createdDate:Date.now() } } // Update: Set the new fields
+      );
+      
+      return result;
+    }
+    else{
+      const information="postid is wrong please check the postid";
+      return information;
+    }
+  }
+  else{
+    const information="manager can only update the post"
+    return information;
+  }
 
+}
 
-
-module.exports={signin1,login1,createPost,viewpost,deletepost};
+module.exports={signin1,login1,createPost,viewpost,deletepost,updatePostById};
